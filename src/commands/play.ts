@@ -11,7 +11,7 @@ import { cancelButton } from "../buttons/cancel.js";
 import { confirmButton } from "../buttons/confirm.js";
 import type { CommandEntrypoint } from "../types/command.js";
 import { debug, info, warning } from "../utils/logger.js";
-import { Option, Result } from "../utils/lib.js";
+import { matchOption, Option, Result } from "../utils/lib.js";
 import { LoadType, type LavalinkResponse, type Track } from "shoukaku";
 
 export const metadata = new SlashCommandBuilder()
@@ -75,74 +75,44 @@ export const entrypoint: CommandEntrypoint = async (
 
 	const shoukaku = interaction.client.shoukaku;
 
-	const existingPlayer = Option.From(shoukaku.players.get(interaction.guildId));
-
-	if (existingPlayer.isSome()) {
-		existingPlayer.unwrap().stopTrack();
-	}
-
-	let connectionOption = Option.From(
-		shoukaku.connections.get(interaction.guildId),
-	);
-	if (connectionOption.isSome() && connectionOption.unwrap().state !== 2) {
-		debug(
+	const connection = Option.From(shoukaku.connections.get(interaction.guildId));
+	if (connection.isSome() && connection.unwrap().state !== 2) {
+		info(
 			"Bot is probably not connected but a " +
 				"connection exists. Trying to reconnect.",
 		);
 
-		// Bot is not connected so destroy the previous player first
-		if (existingPlayer.isSome()) {
-			await existingPlayer.unwrap().destroy();
-		}
-
-		connectionOption.unwrap().setStateUpdate({
+		connection.unwrap().setStateUpdate({
 			channel_id: voiceChannel.id,
 			self_deaf: true,
 			self_mute: false,
 		});
-		await connectionOption.unwrap().connect();
+		await connection.unwrap().connect();
 	}
 
-	// Connected but player malfunctioned
-	if (
-		connectionOption.isSome() &&
-		connectionOption.unwrap().state === 2 &&
-		existingPlayer.isSome() &&
-		existingPlayer.unwrap().paused !== true
-	) {
-		shoukaku.connections.delete(interaction.guildId);
-		shoukaku.players.delete(interaction.guildId);
+	const existingPlayer = Option.From(shoukaku.players.get(interaction.guildId));
+	if (existingPlayer.isSome()) {
+		existingPlayer.unwrap().stopTrack();
 	}
 
-	const player = Option.From(
-		shoukaku.players.get(interaction.guildId),
-	).unwrapOr(
-		await shoukaku.joinVoiceChannel({
-			guildId: interaction.guildId,
-			channelId: voiceChannel.id,
-			shardId: 0,
-			deaf: true,
-			mute: false,
-		}),
+	const player = await matchOption(
+		existingPlayer,
+		(result) => result,
+		async () =>
+			await shoukaku.joinVoiceChannel({
+				guildId: interaction.guildId,
+				channelId: voiceChannel.id,
+				shardId: 0,
+				deaf: true,
+				mute: false,
+			}),
 	);
 
-	// Connection is now definitely initialized
-	// here we get the connection so that we can
-	// listen for disconnects later
-	connectionOption = connectionOption.isNone()
-		? Option.From(shoukaku.connections.get(player.guildId))
-		: connectionOption;
-	if (connectionOption.isNone()) {
-		await interaction.editReply(
-			"Couldn't connect to the channel. " +
-				"I might not have sufficient permissions.",
-		);
-		return;
-	}
-	const connection = connectionOption.unwrap();
-
 	const lavalinkNodeOption = Option.From(
-		shoukaku.options.nodeResolver(shoukaku.nodes, connection),
+		shoukaku.options.nodeResolver(
+			shoukaku.nodes,
+			connection.isSome() ? connection.unwrap() : undefined,
+		),
 	);
 	if (lavalinkNodeOption.isNone()) {
 		await interaction.editReply(

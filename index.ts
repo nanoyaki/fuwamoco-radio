@@ -40,18 +40,9 @@ client.shoukaku = shoukaku;
 initializeListeners(client);
 
 process.on("uncaughtException", (err: Error) => {
-	const trace = Option.From(err.stack);
-	if (
-		trace.isSome() &&
-		(trace.unwrap().includes("src/commands") ||
-			trace.unwrap() === "[object Object]")
-	) {
-		return;
-	}
-
 	error(
 		`An error, possible unrelated to commands, was thrown:\n${err.message}`,
-		trace,
+		Option.From(err.stack),
 	);
 
 	if (err instanceof Panic) {

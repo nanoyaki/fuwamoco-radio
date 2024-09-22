@@ -39,10 +39,6 @@ export class Option<T> {
 	public unwrapOr(value: T): T {
 		return this.value === null ? value : this.value;
 	}
-
-	public valueOf(): T | undefined {
-		return this.value === null ? undefined : this.value;
-	}
 }
 
 export class ResultError<ErrorEnum extends string> {
@@ -147,9 +143,9 @@ export function matchResult<T, E extends string>(
 
 export function matchOption<T>(
 	actual: Option<T>,
-	Some: (result: T) => T,
-	None: () => T,
-): T {
+	Some: (result: T) => Promise<T> | T,
+	None: () => Promise<T> | T,
+): Promise<T> | T {
 	if (actual.isSome()) {
 		return Some(actual.unwrap());
 	}
