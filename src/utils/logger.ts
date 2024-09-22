@@ -17,28 +17,26 @@ export enum TerminalInit {
 	Grey = "\x1b[0;37m\x1b[2;37m",
 }
 
-export const logPath: Option<string> = Option.From<string>(
-	process.env.USE_FILE_LOGGING,
-).isSome()
+const useFileLogging =
+	Option.From<string>(process.env.USE_FILE_LOGGING)
+		.unwrapOr("true")
+		.toLowerCase() === "true";
+export const logPath: Option<string> = useFileLogging
 	? Option.From(join(Bun.main.replace("index.ts", ""), "var/log/bot.log"))
 	: Option.None();
 export const nl = platform() === "win32" ? "\r\n" : "\n";
 
-const logLevelEnvVar = Option.From<string>(process.env.LOG_LEVEL);
-const logLevel: number = logLevelEnvVar.isSome()
-	? Number.parseInt(logLevelEnvVar.unwrap())
-	: LogLevel.Info;
+const logLevel: number = Number.parseInt(
+	Option.From<string>(process.env.LOG_LEVEL).unwrapOr(`${LogLevel.Info}`),
+);
 
 export function error(message: string, trace: Option<string> = Option.None()) {
 	if (logLevel > LogLevel.Error) {
 		return;
 	}
 
-	writeLog(
-		`${message}${trace.isSome() ? `${nl}${trace}` : ""}`,
-		"[ERROR]",
-		TerminalInit.BoldRed,
-	);
+	const logTrace = trace.isSome() ? `${nl}${trace}` : "";
+	writeLog(`${message}${logTrace}`, "[ERROR]", TerminalInit.BoldRed);
 }
 
 export function warning(message: string) {
