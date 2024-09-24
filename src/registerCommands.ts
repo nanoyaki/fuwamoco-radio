@@ -13,7 +13,7 @@ const discordRestApi = new REST({ version: "10" }).setToken(
 export async function registerCommands(
 	clientId: string,
 ): Promise<Collection<string, Command>> {
-	const commandsPath = join(Bun.main.replace("index.ts", ""), "src/commands/");
+	const commandsPath = join(process.cwd(), "src/commands/");
 	const commandFiles = (
 		await readdir(commandsPath, { withFileTypes: true })
 	).filter((file) => file.isFile() && file.name.endsWith(".ts"));

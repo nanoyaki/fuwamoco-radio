@@ -3,11 +3,12 @@ import { readdir } from "node:fs/promises";
 
 import type { Client } from "discord.js";
 
-import type { EventModule } from "./types/event";
-import { info } from "./utils/logger";
+import type { EventModule } from "./types/event.js";
+import { info } from "./utils/logger.js";
+import { Option } from "./utils/lib.js";
 
 export async function initializeListeners(client: Client) {
-	const eventsPath = join(Bun.main.replace("index.ts", ""), "src/events/");
+	const eventsPath = join(process.cwd(), "src/events/");
 	const eventFiles = (
 		await readdir(eventsPath, { withFileTypes: true })
 	).filter((file) => file.isFile() && file.name.endsWith(".ts"));
@@ -27,7 +28,5 @@ export async function initializeListeners(client: Client) {
 		client.on(eventModule.event, eventModule.handler);
 	}
 
-	info("Done registering events. Logging in.");
-
-	client.login(Bun.env.APP_TOKEN);
+	info("Done registering events.");
 }

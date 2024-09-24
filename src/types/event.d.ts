@@ -5,7 +5,7 @@ export type EventType = "on" | "once";
 export type EventModule = {
 	event: keyof ClientEvents;
 	type: EventType;
-	handler: EventHandler<Events>;
+	handler: EventHandler<keyof ClientEvents>;
 };
 
 export type EventHandler<Event extends keyof ClientEvents> = (

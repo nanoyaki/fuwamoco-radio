@@ -1,7 +1,7 @@
 import { Client, type Collection, GatewayIntentBits } from "discord.js";
 import { Shoukaku, Connectors } from "shoukaku";
 
-import { error, warning } from "./src/utils/logger.js";
+import { error, info, warning } from "./src/utils/logger.js";
 import type { Command } from "./src/types/command.js";
 import { Option, Panic } from "./src/utils/lib.js";
 import { initializeListeners } from "./src/initializeListeners.js";
@@ -38,6 +38,8 @@ const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), [
 client.shoukaku = shoukaku;
 
 initializeListeners(client);
+
+client.login(Option.From(process.env.APP_TOKEN).unwrap());
 
 process.on("uncaughtException", (err: Error) => {
 	error(

@@ -1,11 +1,11 @@
 import { type Client, type ClientEvents, Events } from "discord.js";
-import type { EventHandler, EventType } from "../types/event";
-import { Panic } from "../utils/lib";
-import { info } from "../utils/logger";
+import type { EventHandler, EventType } from "../types/event.js";
+import { Panic } from "../utils/lib.js";
+import { info } from "../utils/logger.js";
 import {
 	registerCommands,
 	registerCommandsForGuild,
-} from "../registerCommands";
+} from "../registerCommands.js";
 
 export const event: keyof ClientEvents = Events.ClientReady;
 

@@ -14,11 +14,9 @@
     with pkgs; rec {
       devShells.${system}.default = mkShell rec {
         buildInputs = with pkgs; [
-          bun
-          biome
-          python3
-          ffmpeg_7-full
-          sqlite
+          nodejs_22 # Until bun has a stable ws update implementation for shoukaku
+          pnpm # Package manager
+          biome # Linter
         ];
 
         VSCODE_SETTINGS = builtins.toJSON {
@@ -34,7 +32,7 @@
           mkdir .vscode
           echo $VSCODE_SETTINGS > .vscode/settings.json
 
-          ${pkgs.bun}/bin/bun install
+          ${pkgs.pnpm}/bin/pnpm install
         '';
       };
     };

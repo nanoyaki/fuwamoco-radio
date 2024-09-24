@@ -1,7 +1,7 @@
 import { type CommandInteraction, SlashCommandBuilder } from "discord.js";
-import type { CommandEntrypoint } from "../types/command";
-import { warning } from "../utils/logger";
-import { Option } from "../utils/lib";
+import type { CommandEntrypoint } from "../types/command.js";
+import { warning } from "../utils/logger.js";
+import { Option } from "../utils/lib.js";
 
 export const metadata = new SlashCommandBuilder()
 	.setName("stop")
