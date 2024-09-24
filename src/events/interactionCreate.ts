@@ -1,7 +1,7 @@
 import { Events, type ClientEvents, type Interaction } from "discord.js";
-import { debug, error } from "../utils/logger";
-import { Panic } from "../utils/lib";
-import type { EventHandler } from "../types/event";
+import { debug, error } from "../utils/logger.js";
+import { Panic } from "../utils/lib.js";
+import type { EventHandler } from "../types/event.js";
 
 export const event: keyof ClientEvents = Events.InteractionCreate;
 

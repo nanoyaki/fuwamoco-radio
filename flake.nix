@@ -16,9 +16,6 @@
         buildInputs = with pkgs; [
           bun
           biome
-          python3
-          ffmpeg_7-full
-          sqlite
         ];
 
         VSCODE_SETTINGS = builtins.toJSON {

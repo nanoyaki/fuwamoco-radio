@@ -39,6 +39,8 @@ client.shoukaku = shoukaku;
 
 initializeListeners(client);
 
+client.login(Option.From(process.env.APP_TOKEN).unwrap());
+
 process.on("uncaughtException", (err: Error) => {
 	error(
 		`An error, possible unrelated to commands, was thrown:\n${err.message}`,

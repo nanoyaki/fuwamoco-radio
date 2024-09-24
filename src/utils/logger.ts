@@ -1,7 +1,7 @@
 import { platform } from "node:os";
 import { join } from "node:path";
-import { appendFileSync } from "node:fs";
-import { Option } from "./lib";
+import { appendFileSync, existsSync, writeFileSync } from "node:fs";
+import { Option } from "./lib.js";
 
 export enum LogLevel {
 	Error = 4,
@@ -21,9 +21,7 @@ const useFileLogging =
 	Option.From<string>(process.env.USE_FILE_LOGGING)
 		.unwrapOr("true")
 		.toLowerCase() === "true";
-export const logPath: Option<string> = useFileLogging
-	? Option.From(join(Bun.main.replace("index.ts", ""), "var/log/bot.log"))
-	: Option.None();
+export const logPath: string = join(process.cwd(), "var/log/bot.log");
 export const nl = platform() === "win32" ? "\r\n" : "\n";
 
 const logLevel: number = Number.parseInt(
@@ -67,15 +65,13 @@ function writeLog(message: string, prefix: string, init: TerminalInit) {
 	const prefixedMsg = message.replaceAll(nl, `${nl}${prefix} `);
 	const logFileMsg = `${prefix} ${prefixedMsg}${nl}`;
 
-	Bun.stdout.writer().write(`${init}${logFileMsg}`);
+	process.stdout.write(`${init}${logFileMsg}`);
 
-	if (logPath.isSome()) {
-		const path = logPath.unwrap();
-		const logFile = Bun.file(path);
+	if (useFileLogging) {
+		if (!existsSync(logPath)) {
+			writeFileSync(logPath, logFileMsg);
+		}
 
-		logFile
-			.exists()
-			.then(() => appendFileSync(path, logFileMsg))
-			.catch(async () => await Bun.write(path, logFileMsg));
+		appendFileSync(logPath, logFileMsg);
 	}
 }
